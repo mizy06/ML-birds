@@ -1,1 +1,5 @@
 data/
+.venv/
+*.npy
+__pycache__/
+*.pyc
