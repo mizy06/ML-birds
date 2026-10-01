@@ -2,11 +2,30 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from skimage.feature import hog
 from PIL import Image
-from sklearn.svm import LinearSVC
+from sklearn.svm import SVC, LinearSVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import accuracy_score
 from pathlib import Path
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.preprocessing import normalize
+PART_SCALE = {
+    1: 0.35,   # back
+    2: 0.18,   # beak
+    3: 0.35,   # belly
+    4: 0.35,   # breast
+    5: 0.20,   # crown
+    6: 0.20,   # forehead
+    7: 0.16,   # left eye
+    8: 0.25,   # left leg
+    9: 0.40,   # left wing
+    10: 0.22,  # nape
+    11: 0.16,  # right eye
+    12: 0.25,  # right leg
+    13: 0.40,  # right wing
+    14: 0.35,  # tail
+    15: 0.22,  # throat
+}
 train_test = {}
 with open("D:\\A\\ML\\data\\train_test_split.txt", "r") as f:
     for line in f:
@@ -48,6 +67,17 @@ with open("D:\\A\\ML\\data\\bounding_boxes.txt", "r") as f:
         width = float(width)
         height = float(height)
         bounding_boxes[image_id] = (x, y, width, height)
+parts_box = {}
+with open("D:\\A\\ML\\data\\parts\\part_locs.txt", "r") as f:
+    for line in f:
+        line = line.strip()
+        image_id, parts_id, x, y, visible = line.split(maxsplit=4)
+        image_id = int(image_id)
+        parts_id = int(parts_id)
+        x = float(x)
+        y = float(y)
+        visible = int(visible)  # Assuming width is the first value in visible
+        parts_box[image_id, parts_id] = (x, y, visible)
 #train_test:key:image_id,value:split_label(int, 1 for train, 0 for test);
 #image_locations:key:image_id,value:image_location(string);
 #image_classes:key:image_id,value:class_id(int);
@@ -70,26 +100,72 @@ train_ids, val_ids = train_test_split(
     stratify=labels
 )
 
+def hsv_histogram(region):
+    hsv = np.asarray(region.convert("HSV"))
+
+    histograms = []
+    for channel in range(3):
+        hist, _ = np.histogram(
+            hsv[:, :, channel],
+            bins=16,
+            range=(0, 256),
+        )
+        histograms.append(hist)
+
+    result = np.concatenate(histograms).astype(np.float32)
+    result /= max(result.sum(), 1.0)
+    return result
+
+def extract_feature_from_parts(image,image_id):
+    all_features = []
+    for part_id in range(1, 16):
+        if (image_id, part_id) not in parts_box:
+            continue
+        x, y, visible = parts_box[image_id, part_id]
+        if visible == 0:
+            all_features.append(np.zeros(375))
+            continue
+        scale = PART_SCALE[part_id]
+        width, height = bounding_boxes[image_id][2], bounding_boxes[image_id][3]    
+        part_width = width*scale
+        part_height = height*scale
+        box = (
+            int(max(0, x-part_width/2)),
+            int(max(0, y-part_height/2)),
+            int(min(image.size[0], x + part_width/2)),
+            int(min(image.size[1], y + part_height/2))
+        )
+        part_image = image.crop(box)
+        part_image = part_image.resize((32, 32))
+        histogram_feature = hsv_histogram(part_image)
+        numpy_image = np.array(part_image)
+        feature = hog(
+            numpy_image,
+            orientations=9,
+            pixels_per_cell=(8, 8),
+            cells_per_block=(2, 2),
+            visualize=False,
+            channel_axis=-1
+        )
+        all_features.append(np.concatenate([histogram_feature, feature,[(x-bounding_boxes[image_id][0])/width, (y-bounding_boxes[image_id][1])/height,visible]]))
+    return np.concatenate(all_features) if all_features else np.zeros(0)
+
 def extract_feature_from_image(image):
-    hsv_image = image.convert("HSV")
-    numpy_hsv = np.array(hsv_image)
-    h_hist, _ = np.histogram(
-    numpy_hsv[:, :, 0],
-    bins=16,
-    range=(0, 256)
-    )
-    s_hist, _ = np.histogram(
-    numpy_hsv[:, :, 1],
-    bins=16,
-    range=(0, 256)
-    )
-    v_hist, _ = np.histogram(
-    numpy_hsv[:, :, 2],
-    bins=16,
-    range=(0, 256)
-    )
-    hist = np.concatenate([h_hist, s_hist, v_hist])
-    return hist / np.sum(hist)
+    width, height = image.size
+    mid_x, mid_y = width // 2, height // 2
+
+    boxes = [
+        (0, 0, width, height),       # 整鸟
+        (0, 0, mid_x, mid_y),       # 左上
+        (mid_x, 0, width, mid_y),   # 右上
+        (0, mid_y, mid_x, height),  # 左下
+        (mid_x, mid_y, width, height),  # 右下
+    ]
+
+    return np.concatenate([
+        hsv_histogram(image.crop(box))
+        for box in boxes
+    ])
 def extract_feature(image_ids):
     all_features = []
 
@@ -99,6 +175,7 @@ def extract_feature(image_ids):
         image = Image.open(
             "D:\\A\\ML\\data\\images\\" + location
         ).convert("RGB")
+        parts_features = extract_feature_from_parts(image,image_id)
         x, y, width, height = bounding_boxes[image_id]
         box = (
         int(x),
@@ -119,7 +196,15 @@ def extract_feature(image_ids):
             visualize=False,
             channel_axis=-1
         )
-        all_features.append(np.concatenate([histogram_feature, feature]))
+        global_hog = feature / (np.linalg.norm(feature) + 1e-8)
+        histogram_feature = histogram_feature / (np.linalg.norm(histogram_feature) + 1e-8)
+        parts_features = parts_features / (np.linalg.norm(parts_features) + 1e-8)
+        final_feature = np.concatenate([
+            global_hog,
+            0.5 * histogram_feature,
+            3.0 * parts_features
+            ])
+        all_features.append(final_feature)
     return all_features
 x_train_file = Path("X_train_hsv.npy")
 y_train_file = Path("y_train_hsv.npy")
@@ -161,17 +246,15 @@ print(X_train.shape)
 print(y_train.shape)
 print(X_val.shape)
 print(y_val.shape)
-
-model = SVC(
-    kernel="rbf",
-    C=100,
-    gamma="scale",
-    cache_size=2048,
-    verbose=False,
-)
-
-
-model.fit(X_train, y_train)
-y_pred = model.predict(X_val)
-accuracy = accuracy_score(y_val, y_pred)
-print(f"Validation accuracy: {accuracy}")
+# 完成第 2 步的空间颜色特征后，这里是 5 个区域 × 3 个通道 × 16 个 bin
+COLOR_DIM = 5 * 3 * 16
+for C in [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3, 10]:
+    base_model = LinearSVC(max_iter=10000,C=0.1)
+    model = OneVsRestClassifier(
+    base_model,
+    n_jobs=8
+    )
+    model.fit(X_train, y_train)
+    pred = model.predict(X_val)
+    acc = accuracy_score(y_val, pred)
+    print(C, acc)

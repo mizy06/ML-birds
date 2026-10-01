@@ -4,8 +4,13 @@ from torch.utils.data import Dataset
 from PIL import Image
 from torchvision import transforms
 from torch.utils.data import DataLoader
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from tqdm import tqdm
+from torchvision.models import ResNet50_Weights, resnet50
 train_test = {}
-with open("D:\\A\\ML\\data\\train_test_split.txt", "r") as f:
+with open("D:\\A\\ML\\data\\train_test_split_0to1_1to9.txt", "r") as f:
     for line in f:
         line = line.strip()
         image_id, split_label = line.split(maxsplit=1)
@@ -54,9 +59,22 @@ train_ids, val_ids = train_test_split(
     random_state=42,
     stratify=labels
 )
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor()
+norm = transforms.Normalize(
+    mean=[0.485, 0.456, 0.406],
+    std=[0.229, 0.224, 0.225],
+)
+train_transform = transforms.Compose([
+    transforms.Resize(256),
+    transforms.RandomResizedCrop(224, scale=(0.75, 1.0)),
+    transforms.RandomHorizontalFlip(),
+    transforms.ColorJitter(brightness=0.15, contrast=0.15,
+                           saturation=0.15),
+    transforms.ToTensor(), norm,
+])
+val_transform = transforms.Compose([
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(), norm,
 ])
 class BirdDataset(Dataset):
     def __init__(self, image_ids, image_locations, image_classes, images_root, transform):
@@ -77,16 +95,76 @@ class BirdDataset(Dataset):
         if self.transform:
             image = self.transform(image)
         return image, image_class
-train_dataset = BirdDataset(train_ids, image_locations, image_classes, "D:\\A\\ML\\data\\images", transform)
-print(len(train_dataset))
-for i in range(5):
-    image, label = train_dataset[i]
-    print(i, image.shape, label)
-dataset = train_dataset
-batch_size = 32
-shuffle = True
-train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
-num_workers = 0
-images, labels = next(iter(train_loader))
-print(images.shape)
-print(labels.shape)
+if __name__ == "__main__":
+    train_dataset = BirdDataset(train_ids, image_locations, image_classes, "D:\\A\\ML\\data\\images", train_transform)
+    print(len(train_dataset))
+    for i in range(5):
+        image, label = train_dataset[i]
+        print(i, image.shape, label)
+    dataset = train_dataset
+    batch_size = 32
+    shuffle = True
+    train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+    num_workers = 0
+    images, labels = next(iter(train_loader))
+    print(images.shape)
+    print(labels.shape)
+    val_dataset = BirdDataset(val_ids,image_locations,image_classes,"D:\\A\\ML\\data\\images",val_transform)
+    val_loader = DataLoader(val_dataset,batch_size=32,shuffle=False)
+    device=torch.device(
+        "xpu" 
+    )
+    print(device)
+
+    model = resnet50(weights=ResNet50_Weights.DEFAULT)
+
+    model.fc = nn.Linear(
+        model.fc.in_features,
+        200
+    )
+    model=model.to(device)
+    criterion=nn.CrossEntropyLoss()
+    optimizer = optim.AdamW([
+        {"params": model.fc.parameters(), "lr": 1e-4},
+        {"params": (p for n, p in model.named_parameters()
+                    if not n.startswith("fc.")), "lr": 1e-5},
+    ], weight_decay=1e-4)
+    criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
+    epochs=20
+    best_acc=0
+    for epoch in range(epochs):
+        model.train()
+        running_loss=0
+        train_correct=0
+        train_total=0
+        for images,labels in tqdm(train_loader):
+            images=images.to(device)
+            labels=labels.to(device)
+            outputs=model(images)
+            loss=criterion(outputs,labels)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
+            _,predicted=torch.max(outputs,1)
+            train_total += labels.size(0)
+            train_correct += (predicted==labels).sum().item()
+        print("Epoch:",epoch+1,"Loss:",running_loss/len(train_loader))
+        print("Training Accuracy:",train_correct/train_total)
+        model.eval()
+        correct=0
+        total=0
+        with torch.no_grad():
+            for images,labels in val_loader:
+                images=images.to(device)
+                labels=labels.to(device)
+                outputs=model(images)
+                _,predicted=torch.max(outputs,1)
+                total += labels.size(0)
+                correct += (predicted==labels).sum().item()
+        acc=correct/total
+        print("Validation Accuracy:",acc)
+        if acc > best_acc:
+            best_acc = acc
+            torch.save(model.state_dict(),"D:\\A\\ML\\model\\best_model.pth")
+            print("Model saved!")

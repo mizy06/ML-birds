@@ -1,0 +1,52 @@
+HOST=f11r2n02 JOB=875625 CPUS=16 GRES=dcu:1
+START=2026-10-01 16:59:00
+torch=2.4.1 hip=6.1.25065 cuda=None
+available=['dcu', 'cpu']
+backend=dcu stack=DTK/HIP name=BW mem=64.0GiB count=1
+split=/public/home/acpl6sbvpl/cub_job/data/train_test_split_0to1_1to9.txt sha256=3a67f959ae5617be182e0c7c6c9343663e223df7816b6ac71cfa8bbfe9126c6a
+train=8487 val=2122 holdout=1179
+images per class: train=32..47, val=8..12
+original official test images in training: 3641; in validation: 974
+This custom split is not the official CUB train/test protocol.
+device=cuda backend=dcu stack=DTK/HIP name=BW mem=64.0GiB count=1
+torch=2.4.1 hip=6.1.25065 smoothing=0.0 minimum_possible_CE=0.000000
+pretrained weights: /public/home/acpl6sbvpl/.cache/torch/hub/checkpoints/resnet50-11ad3fa6.pth
+epoch=1 train=0.1765 val=0.4576 val_loss=2.8677 lr=0.0001/1e-05
+saved /public/home/acpl6sbvpl/cub_job/runs/r50_full_bntrain/best.pt
+epoch=2 train=0.5733 val=0.6517 val_loss=1.6184 lr=0.0001/1e-05
+saved /public/home/acpl6sbvpl/cub_job/runs/r50_full_bntrain/best.pt
+epoch=3 train=0.7312 val=0.7276 val_loss=1.1722 lr=9.8e-05/9.8e-06
+saved /public/home/acpl6sbvpl/cub_job/runs/r50_full_bntrain/best.pt
+epoch=4 train=0.7998 val=0.7658 val_loss=0.9558 lr=9.6e-05/9.6e-06
+saved /public/home/acpl6sbvpl/cub_job/runs/r50_full_bntrain/best.pt
+epoch=5 train=0.8465 val=0.7681 val_loss=0.8684 lr=9.4e-05/9.4e-06
+saved /public/home/acpl6sbvpl/cub_job/runs/r50_full_bntrain/best.pt
+epoch=6 train=0.8802 val=0.7941 val_loss=0.7734 lr=9e-05/9e-06
+saved /public/home/acpl6sbvpl/cub_job/runs/r50_full_bntrain/best.pt
+epoch=7 train=0.9035 val=0.7964 val_loss=0.7568 lr=8.6e-05/8.6e-06
+saved /public/home/acpl6sbvpl/cub_job/runs/r50_full_bntrain/best.pt
+epoch=8 train=0.9249 val=0.8110 val_loss=0.7157 lr=8.2e-05/8.2e-06
+saved /public/home/acpl6sbvpl/cub_job/runs/r50_full_bntrain/best.pt
+epoch=9 train=0.9424 val=0.8058 val_loss=0.6995 lr=7.7e-05/7.7e-06
+epoch=10 train=0.9549 val=0.8096 val_loss=0.6906 lr=7.1e-05/7.1e-06
+epoch=11 train=0.9639 val=0.8139 val_loss=0.6925 lr=6.5e-05/6.5e-06
+saved /public/home/acpl6sbvpl/cub_job/runs/r50_full_bntrain/best.pt
+epoch=12 train=0.9723 val=0.8134 val_loss=0.6857 lr=5.9e-05/5.9e-06
+epoch=13 train=0.9770 val=0.8157 val_loss=0.6751 lr=5.3e-05/5.3e-06
+saved /public/home/acpl6sbvpl/cub_job/runs/r50_full_bntrain/best.pt
+epoch=14 train=0.9833 val=0.8162 val_loss=0.6763 lr=4.7e-05/4.7e-06
+saved /public/home/acpl6sbvpl/cub_job/runs/r50_full_bntrain/best.pt
+epoch=15 train=0.9873 val=0.8195 val_loss=0.6720 lr=4.1e-05/4.1e-06
+saved /public/home/acpl6sbvpl/cub_job/runs/r50_full_bntrain/best.pt
+epoch=16 train=0.9906 val=0.8233 val_loss=0.6759 lr=3.5e-05/3.5e-06
+saved /public/home/acpl6sbvpl/cub_job/runs/r50_full_bntrain/best.pt
+epoch=17 train=0.9900 val=0.8167 val_loss=0.6709 lr=2.9e-05/2.9e-06
+epoch=18 train=0.9923 val=0.8186 val_loss=0.6800 lr=2.3e-05/2.3e-06
+epoch=19 train=0.9933 val=0.8228 val_loss=0.6723 lr=1.8e-05/1.8e-06
+epoch=20 train=0.9934 val=0.8195 val_loss=0.6783 lr=1.4e-05/1.4e-06
+epoch=21 train=0.9942 val=0.8219 val_loss=0.6744 lr=9.5e-06/9.5e-07
+epoch=22 train=0.9939 val=0.8167 val_loss=0.6825 lr=6.2e-06/6.2e-07
+early stop; best epoch=16 val=0.82328
+best epoch=16 val=0.82328 path=/public/home/acpl6sbvpl/cub_job/runs/r50_full_bntrain/best.pt
+EXIT_CODE=0
+END=2026-10-01 17:07:32

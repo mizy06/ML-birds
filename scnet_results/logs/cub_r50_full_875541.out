@@ -1,0 +1,14 @@
+HOST=f11r2n03 JOB=875541 CPUS=16 GRES=dcu:1
+START=2026-10-01 16:14:12
+torch=2.4.1 hip=6.1.25065 cuda=None
+available=['dcu', 'cpu']
+backend=dcu stack=DTK/HIP name=BW mem=64.0GiB count=1
+split=/public/home/acpl6sbvpl/cub_job/data/train_test_split_0to1_1to9.txt sha256=3a67f959ae5617be182e0c7c6c9343663e223df7816b6ac71cfa8bbfe9126c6a
+train=8487 val=2122 holdout=1179
+images per class: train=32..47, val=8..12
+original official test images in training: 3641; in validation: 974
+This custom split is not the official CUB train/test protocol.
+device=cuda backend=dcu stack=DTK/HIP name=BW mem=64.0GiB count=1
+torch=2.4.1 hip=6.1.25065 smoothing=0.0 minimum_possible_CE=0.000000
+EXIT_CODE=1
+END=2026-10-01 16:15:00

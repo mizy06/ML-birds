@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/public/home/acpl6sbvpl/cub_job/cub_experiments_scnet.py", line 444, in <module>
+    main()
+  File "/public/home/acpl6sbvpl/cub_job/cub_experiments_scnet.py", line 360, in main
+    saved = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/site-packages/torch/serialization.py", line 1065, in load
+    with _open_file_like(f, 'rb') as opened_file:
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/site-packages/torch/serialization.py", line 468, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/site-packages/torch/serialization.py", line 449, in __init__
+    super().__init__(open(name, mode))
+FileNotFoundError: [Errno 2] No such file or directory: '/public/home/acpl6sbvpl/cub_job/runs/r50_box/best.pt'

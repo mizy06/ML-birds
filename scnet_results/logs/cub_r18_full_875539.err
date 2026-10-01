@@ -1,0 +1,60 @@
+Downloading: "https://download.pytorch.org/models/resnet18-f37072fd.pth" to /public/home/acpl6sbvpl/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth
+Traceback (most recent call last):
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/urllib/request.py", line 1348, in do_open
+    h.request(req.get_method(), req.selector, req.data, headers,
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/http/client.py", line 1283, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/http/client.py", line 1329, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/http/client.py", line 1278, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/http/client.py", line 1038, in _send_output
+    self.send(msg)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/http/client.py", line 976, in send
+    self.connect()
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/http/client.py", line 1448, in connect
+    super().connect()
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/http/client.py", line 942, in connect
+    self.sock = self._create_connection(
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/socket.py", line 836, in create_connection
+    for res in getaddrinfo(host, port, 0, SOCK_STREAM):
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/socket.py", line 967, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+socket.gaierror: [Errno -2] Name or service not known
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/public/home/acpl6sbvpl/cub_job/cub_experiments_scnet.py", line 444, in <module>
+    main()
+  File "/public/home/acpl6sbvpl/cub_job/cub_experiments_scnet.py", line 395, in main
+    model, head_name = build_model(args.model, pretrained=True)
+  File "/public/home/acpl6sbvpl/cub_job/cub_experiments_scnet.py", line 230, in build_model
+    model = resnet18(weights=ResNet18_Weights.IMAGENET1K_V1 if pretrained else None)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/site-packages/torchvision/models/_utils.py", line 142, in wrapper
+    return fn(*args, **kwargs)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/site-packages/torchvision/models/_utils.py", line 228, in inner_wrapper
+    return builder(*args, **kwargs)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/site-packages/torchvision/models/resnet.py", line 705, in resnet18
+    return _resnet(BasicBlock, [2, 2, 2, 2], weights, progress, **kwargs)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/site-packages/torchvision/models/resnet.py", line 301, in _resnet
+    model.load_state_dict(weights.get_state_dict(progress=progress, check_hash=True))
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/site-packages/torchvision/models/_api.py", line 90, in get_state_dict
+    return load_state_dict_from_url(self.url, *args, **kwargs)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/site-packages/torch/hub.py", line 765, in load_state_dict_from_url
+    download_url_to_file(url, cached_file, hash_prefix, progress=progress)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/site-packages/torch/hub.py", line 624, in download_url_to_file
+    u = urlopen(req)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/urllib/request.py", line 216, in urlopen
+    return opener.open(url, data, timeout)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/urllib/request.py", line 519, in open
+    response = self._open(req, data)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/urllib/request.py", line 536, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/urllib/request.py", line 1391, in https_open
+    return self.do_open(http.client.HTTPSConnection, req,
+  File "/public/software/sghpc_sdk/Linux_x86_64/25.6/das/conda/envs/pytorch-python3.10/lib/python3.10/urllib/request.py", line 1351, in do_open
+    raise URLError(err)
+urllib.error.URLError: <urlopen error [Errno -2] Name or service not known>
